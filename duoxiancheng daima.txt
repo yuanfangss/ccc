@@ -1,0 +1,101 @@
+serverTest
+package 多线程点对点聊天;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Scanner;
+
+
+public class ServerTest {
+	public static void main(String[] args) throws IOException {
+		ServerSocket socket = new ServerSocket(23333);
+		final Socket soc = socket.accept();
+		new Thread(){
+			public void run(){
+				try{
+					InputStream netIn = soc.getInputStream();
+					System.out.println("等待接收对方消息");
+					byte[] bytes = new byte[1024 * 6];
+					int len =0;
+					while ((len = netIn.read(bytes)) != -1) {
+						System.out.println("收到消息: "+new String(bytes,0,len));
+					}
+				}catch (IOException e) {
+					e.printStackTrace();
+			   }
+			   }
+			}.start();
+			new Thread(){
+				public void run(){
+					try{
+						OutputStream netOut = soc.getOutputStream();
+                        Scanner sc = new Scanner(System.in);
+                        String  str;
+                        while (true) {
+                        	str = sc.next();
+                        	netOut.write(str.getBytes());
+                        	sc = new Scanner(System.in);
+                        }
+					}catch(IOException e){
+						e.printStackTrace();
+					}
+				}
+			}.start();
+		}
+	}
+
+
+
+
+
+
+
+ClintTest
+package 多线程点对点聊天;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.Scanner;
+
+public class ClintTest01 {
+	public static void main(String[] args) throws IOException {
+		final Socket socket = new Socket("127.0.0.1",23333);
+		new Thread() {
+			public void run(){
+				Scanner sc = new Scanner(System.in);
+				String str;
+				try {
+					OutputStream    netOut = socket.getOutputStream();
+					System.out.println("连接成功请输入内容: ");
+					while(true){
+						str = sc.next();
+						netOut.write(str.getBytes());
+						sc = new Scanner(System.in);
+					}
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
+		new Thread(){
+			public void run(){
+				try {
+					InputStream netIn = socket.getInputStream();
+					byte[] bytes = new byte[1024 * 7];
+					int len = 0;
+					while ((len = netIn.read(bytes)) != -1) {
+						System.out.println("收到消息:  "+new String(bytes,0,len));
+					}
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
+		// TODO Auto-generated method stub
+
+	}
+
+}
